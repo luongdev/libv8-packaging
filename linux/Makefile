@@ -22,7 +22,7 @@ DEBUILD=debuild -us -uc -b
 
 .PHONY: all distro clean-tarball tarball source-build source-clean build _build clean
 
-all: _phony
+all: distro
 
 ${BUILD_DIR}/${NAME}_${VERSION}:
 	mkdir -p ${BUILD_DIR}/${NAME}_${VERSION} ; \
@@ -65,5 +65,4 @@ _build: distro
 	sed -i -e "s/DATE/${DATE}/g" debian/changelog ; \
 	sed -i -e "s/DISTRO/${DISTR}/g" debian/control ; \
 	sed -i -e "s/BUILD_VERSION/${BUILD_VERSION}/g" debian/control ; \
-	sed -i -e "s/GIT_VERSION/${GIT_VERSION}/g" debian/control ; \
-	sed -i -e "s/PKG_NAME/${NAME}/g" debian
+	sed -i -e "s/GIT_VERSION/${GIT_VERSION}/g" debian/control

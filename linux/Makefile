@@ -65,4 +65,25 @@ _build: distro
 	sed -i -e "s/DATE/${DATE}/g" debian/changelog ; \
 	sed -i -e "s/DISTRO/${DISTR}/g" debian/control ; \
 	sed -i -e "s/BUILD_VERSION/${BUILD_VERSION}/g" debian/control ; \
-	sed -i -e "s/GIT_VERSION/${GIT_VERSION}/g" debian/control
+	sed -i -e "s/GIT_VERSION/${GIT_VERSION}/g" debian/control ; \
+	for file in debian/*.${DISTR}; do \
+	  if [ -f $$file ]; then \
+	    rename -f "s/\.${DISTR}$$//" $$file ; \
+	  fi ; \
+	done ; \
+	CUR_NAME=`dpkg-parsechangelog | grep '^Source: ' | awk '{print $$2}'`; \
+	CUR_VER=`dpkg-parsechangelog | grep '^Version: ' | awk '{print $$2}'`; \
+	if dpkg --compare-versions $$NEW_VER gt $$CUR_VER; then \
+	  echo "New version. Will update changelog and build source package" ; \
+	  dch -v $$NEW_VER --package="${NAME}" -D ${DISTR} --force-distribution \
+	      "New version based on ${GIT_VERSION} (${GIT_URL})" ; \
+	  DEB_MAINTAINER_MODE=1 debuild clean ; \
+	else \
+	  if dpkg --compare-versions $$NEW_VER ne $$CUR_VER; then \
+	    echo "ERROR: Cannot rebuild source package, because new version is earlier \
+	          than the one specified in changelog ($$NEW_VER < $$CUR_VER)" ; \
+	    exit 1; \
+	  fi ; \
+	  echo "Same version, just rebuild source package" ; \
+	fi ; \
+	${DEBUILD}
